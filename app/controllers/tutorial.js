@@ -3,37 +3,40 @@ const Tutorial = db.tutorials;
 const Comment = db.comments;
 const Op = db.Sequelize.Op;
 
-// Create and Save a new Tutorial
-exports.create = (req, res) => {
-    // Validate request
-    if (!req.body.title) {
-        res.status(400).send({
-            message: "Content can not be empty!"
+
+exports.getAllPosts = async (req, res) => {
+    try {
+        const tutorials = await Tutorial.findAll({include: ["comments"]});
+        return res.status(200).json({
+            success: true,
+            totalData: tutorials.length,
+            data: tutorials,
         });
-        return;
+    } catch (error) {
+        return res.status(500).send(error.message);
+    }
+}
+
+// Create and Save a new Tutorial
+exports.create = async (req, res) => {
+    // Validate request
+    try {
+        if (!req.body.title) {
+            res.status(400).send({
+                message: "Content can not be empty!"
+            });
+            return;
+        }
+        const tutorial = await Tutorial.create(req.body);
+        return res.status(200).json({
+            success: true,
+            totalData: tutorial.length,
+            data: tutorial,
+        });
+    } catch (error) {
+        return res.status(500).json({error: error.message})
     }
 
-    // Create a Tutorial
-    const tutorial = {
-        title: req.body.title,
-        description: req.body.description,
-        published: req.body.published ? req.body.published : false
-    };
-
-    // Save Tutorial in the database
-    Tutorial.create(tutorial)
-        .then(data => {
-            res.status(200).json({
-                success: true,
-                data: data
-            })
-        })
-        .catch(err => {
-            res.status(500).send({
-                message:
-                    err.message || "Some error occurred while creating the Tutorial."
-            });
-        });
 };
 
 // Retrieve all Tutorials from the database.
@@ -58,37 +61,24 @@ exports.findAll = (req, res) => {
         });
 
 };
-exports.createComment = (req, res) => {
-    if (!req.body.name) {
-        res.status(400).send({
-            message: "Content can not be empty!"
-        });
-        return;
-    }
-    // Create a Tutorial
-    const comment = {
-        name: req.body.name,
-        text: req.body.text,
-        tutorialId: req.body.tutorialId
-    };
-
-    // Save Tutorial in the database
-    Comment.create(comment)
-        .then(data => {
-            res.status(200).json({
-                success: true,
-                data: data
-            })
-        })
-        .catch(err => {
-            res.status(500).send({
-                message:
-                    err.message || "Some error occurred while creating the Tutorial."
+exports.createComment =  async (req, res) => {
+    try {
+        if (!req.body.name) {
+            res.status(400).send({
+                message: "Content can not be empty!"
             });
+            return;
+        }
+        const comment = await Comment.create(req.body);
+        return res.status(200).json({
+            success: true,
+            totalData: comment.length,
+            data: comment,
         });
-
-};
-
+    } catch (error) {
+        return res.status(500).json({error: error.message})
+    }
+}
 // Find a single Tutorial with an id
 exports.findOne = (req, res) => {
     const id = req.params.id;
