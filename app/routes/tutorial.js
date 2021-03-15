@@ -5,6 +5,8 @@ module.exports = app => {
 
     // Create a new Tutorial
     router.post("/", tutorials.create);
+    router.post("/comments", tutorials.createComment);
+
 
     // Retrieve all Tutorials
     router.get("/", tutorials.findAll);
@@ -14,6 +16,8 @@ module.exports = app => {
 
     // Retrieve a single Tutorial with id
     router.get("/:id", tutorials.findOne);
+    router.get("/comments/:id", tutorials.findOneComment);
+
 
     // Update a Tutorial with id
     router.put("/:id", tutorials.update);
